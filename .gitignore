@@ -4,10 +4,12 @@
 *.jar
 *.war
 *.ear
-.idea
+.idea/
 *.iml
+.settings/
+target/
+.classpath
+.project
 
-examples/target
-isoparser/target
 isoparser/aac-sample.mp4
 isoparser/ac3-sample.mp4
