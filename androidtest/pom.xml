@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mp4parser</groupId>
+
+    <parent>
+        <groupId>tv.okko.common.mp4</groupId>
+        <artifactId>mp4parser-project</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
     <artifactId>androidtest</artifactId>
-    <version>1.0-RC-16-SNAPSHOT</version>
     <packaging>apk</packaging>
     <name>androidtest</name>
 
@@ -16,9 +22,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.mp4parser</groupId>
+            <groupId>tv.okko.common.mp4</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.0.4.2</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -31,6 +37,40 @@
                     <artifactId>android-maven-plugin</artifactId>
                     <version>4.0.0-rc.2</version>
                     <extensions>true</extensions>
+                </plugin>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            com.jayway.maven.plugins.android.generation2
+                                        </groupId>
+                                        <artifactId>
+                                            android-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [4.0.0-rc.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>
+                                                generate-sources
+                                            </goal>
+                                            <goal>proguard</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
