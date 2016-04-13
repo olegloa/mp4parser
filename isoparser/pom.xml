@@ -14,7 +14,7 @@
     <name>ISO Parser</name>
     <description>A generic parser and writer for all ISO 14496 based files (MP4, Quicktime, DCF, PDCF, ...)
     </description>
-    <url>https://github.com/sannies/mp4parser</url>
+    <url>https://github.com/olegloa/mp4parser</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
