@@ -16,6 +16,9 @@
 
 package org.mp4parser.boxes.sampleentry;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.Box;
 import org.mp4parser.BoxParser;
 import org.mp4parser.boxes.iso14496.part12.ProtectionSchemeInformationBox;
@@ -185,8 +188,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer content = ByteBuffer.allocate(28);
-        dataSource.read(content);
+        ByteBuffer content = readFully(dataSource, 28);
         content.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
 
@@ -213,18 +215,14 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
         //more qt stuff - see http://mp4v2.googlecode.com/svn-history/r388/trunk/src/atom_sound.cpp
 
         if (soundVersion == 1) {
-            ByteBuffer appleStuff = ByteBuffer.allocate(16);
-            dataSource.read(appleStuff);
-            appleStuff.rewind();
+            ByteBuffer appleStuff = readFully(dataSource, 16);
             samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerFrame = IsoTypeReader.readUInt32(appleStuff);
             bytesPerSample = IsoTypeReader.readUInt32(appleStuff);
         }
         if (soundVersion == 2) {
-            ByteBuffer appleStuff = ByteBuffer.allocate(36);
-            dataSource.read(appleStuff);
-            appleStuff.rewind();
+            ByteBuffer appleStuff = readFully(dataSource, 36);
             samplesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerPacket = IsoTypeReader.readUInt32(appleStuff);
             bytesPerFrame = IsoTypeReader.readUInt32(appleStuff);
@@ -238,8 +236,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
             final long remaining = contentSize - 28
                     - (soundVersion == 1 ? 16 : 0)
                     - (soundVersion == 2 ? 36 : 0);
-            final ByteBuffer owmaSpecifics = ByteBuffer.allocate(CastUtils.l2i(remaining));
-            dataSource.read(owmaSpecifics);
+            final ByteBuffer owmaSpecifics = readFully(dataSource, CastUtils.l2i(remaining));
 
             addBox(new Box() {
 
@@ -252,8 +249,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
                 }
 
                 public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-                    owmaSpecifics.rewind();
-                    writableByteChannel.write(owmaSpecifics);
+                    writeFully(writableByteChannel, (ByteBuffer) owmaSpecifics.rewind());
                 }
 
             });
@@ -267,7 +263,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         ByteBuffer byteBuffer = ByteBuffer.allocate(28
                 + (soundVersion == 1 ? 16 : 0)
                 + (soundVersion == 2 ? 36 : 0));
@@ -301,7 +297,7 @@ public final class AudioSampleEntry extends AbstractSampleEntry {
             IsoTypeWriter.writeUInt32(byteBuffer, bytesPerSample);
             byteBuffer.put(soundVersion2Data);
         }
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) byteBuffer.rewind());
         writeContainer(writableByteChannel);
     }
 

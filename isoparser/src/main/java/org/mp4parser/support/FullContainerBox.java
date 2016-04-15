@@ -16,6 +16,8 @@
 
 package org.mp4parser.support;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+
 import org.mp4parser.Box;
 import org.mp4parser.BoxParser;
 import org.mp4parser.FullBox;
@@ -57,16 +59,14 @@ public abstract class FullContainerBox extends AbstractContainerBox implements F
         this.flags = flags;
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends Box> List<T> getBoxes(Class<T> clazz) {
         return getBoxes(clazz, false);
     }
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer versionAndFlags = ByteBuffer.allocate(4);
-        dataSource.read(versionAndFlags);
-        parseVersionAndFlags((ByteBuffer) versionAndFlags.rewind());
+        ByteBuffer versionAndFlags = readFully(dataSource, 4);
+        parseVersionAndFlags(versionAndFlags);
         super.parse(dataSource, header, contentSize, boxParser);
     }
 

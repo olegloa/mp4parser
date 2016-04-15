@@ -16,6 +16,8 @@
 
 package org.mp4parser.boxes.iso14496.part12;
 
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
 import org.mp4parser.ParsableBox;
 import org.mp4parser.support.DoNotParseDetail;
@@ -57,7 +59,7 @@ public final class MediaDataBox implements ParsableBox {
 
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write((ByteBuffer) header.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) header.rewind());
         FileChannel fc = new FileInputStream(dataFile).getChannel();
 
         fc.transferTo(0, dataFile.lastModified(), writableByteChannel);

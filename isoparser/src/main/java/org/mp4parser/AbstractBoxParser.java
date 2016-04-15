@@ -15,7 +15,10 @@
  */
 package org.mp4parser;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+
 import org.mp4parser.boxes.UserBox;
+import org.mp4parser.tools.ChannelHelper;
 import org.mp4parser.tools.Hex;
 import org.mp4parser.tools.IsoTypeReader;
 
@@ -32,7 +35,8 @@ import java.util.logging.Logger;
 public abstract class AbstractBoxParser implements BoxParser {
 
     private static Logger LOG = Logger.getLogger(AbstractBoxParser.class.getName());
-    ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>() {
+
+    private ThreadLocal<ByteBuffer> header = new ThreadLocal<ByteBuffer>() {
         @Override
         protected ByteBuffer initialValue() {
             return ByteBuffer.allocate(32);
@@ -50,37 +54,29 @@ public abstract class AbstractBoxParser implements BoxParser {
      * @throws java.io.IOException if reading from <code>in</code> fails
      */
     public ParsableBox parseBox(ReadableByteChannel byteChannel, String parentType) throws IOException {
-        header.get().rewind().limit(8);
+        ByteBuffer header = this.header.get();
 
-        int bytesRead = 0;
-        int b;
-        while ((b = byteChannel.read(header.get())) + bytesRead < 8) {
-            if (b < 0) {
-                throw new EOFException();
-            } else {
-                bytesRead += b;
-            }
-        }
-        header.get().rewind();
+        header.rewind().limit(8);
+        readFully(byteChannel, header);
+        header.rewind();
 
-        long size = IsoTypeReader.readUInt32(header.get());
+        long size = IsoTypeReader.readUInt32(header);
         // do plausibility check
         if (size < 8 && size > 1) {
             LOG.severe("Plausibility check failed: size < 8 (size = " + size + "). Stop parsing!");
-            return null;
+            throw new EOFException();
         }
 
-
-        String type = IsoTypeReader.read4cc(header.get());
+        String type = IsoTypeReader.read4cc(header);
         //System.err.println(type);
         byte[] usertype = null;
         long contentSize;
 
         if (size == 1) {
-            header.get().limit(16);
-            byteChannel.read(header.get());
-            header.get().position(8);
-            size = IsoTypeReader.readUInt64(header.get());
+            header.limit(16);
+            readFully(byteChannel, header);
+            header.position(8);
+            size = IsoTypeReader.readUInt64(header);
             contentSize = size - 16;
         } else if (size == 0) {
             throw new RuntimeException("box size of zero means 'till end of file. That is not yet supported");
@@ -88,23 +84,23 @@ public abstract class AbstractBoxParser implements BoxParser {
             contentSize = size - 8;
         }
         if (UserBox.TYPE.equals(type)) {
-            header.get().limit(header.get().limit() + 16);
-            byteChannel.read(header.get());
+            header.limit(header.limit() + 16);
+            readFully(byteChannel, header);
             usertype = new byte[16];
-            for (int i = header.get().position() - 16; i < header.get().position(); i++) {
-                usertype[i - (header.get().position() - 16)] = header.get().get(i);
+            for (int i = header.position() - 16; i < header.position(); i++) {
+                usertype[i - (header.position() - 16)] = header.get(i);
             }
             contentSize -= 16;
         }
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.finer("Creating " + type + " " + Hex.encodeHex(new byte[]{header.get().get(4), header.get().get(5), header.get().get(6), header.get().get(7)}));
+            LOG.finer("Creating " + type + " " + Hex.encodeHex(new byte[]{header.get(4), header.get(5), header.get(6), header.get(7)}));
         }
         ParsableBox parsableBox = createBox(type, usertype, parentType);
         //LOG.finest("Parsing " + box.getType());
         // System.out.println("parsing " + Mp4Arrays.toString(box.getType()) + " " + box.getClass().getName() + " size=" + size);
-        header.get().rewind();
+        header.rewind();
 
-        parsableBox.parse(byteChannel, header.get(), contentSize, this);
+        parsableBox.parse(byteChannel, header, contentSize, this);
         return parsableBox;
     }
 

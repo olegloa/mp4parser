@@ -16,6 +16,9 @@
 
 package org.mp4parser.boxes.iso14496.part12;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
 import org.mp4parser.FullBox;
 import org.mp4parser.boxes.sampleentry.AbstractSampleEntry;
@@ -81,9 +84,7 @@ public class SampleDescriptionBox extends AbstractContainerBox implements FullBo
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(8);
-        dataSource.read(versionFlagNumOfChildBoxes);
-        versionFlagNumOfChildBoxes.rewind();
+        ByteBuffer versionFlagNumOfChildBoxes = readFully(dataSource, 8);
         version = IsoTypeReader.readUInt8(versionFlagNumOfChildBoxes);
         flags = IsoTypeReader.readUInt24(versionFlagNumOfChildBoxes);
         // number of child boxes is not required
@@ -92,12 +93,12 @@ public class SampleDescriptionBox extends AbstractContainerBox implements FullBo
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         ByteBuffer versionFlagNumOfChildBoxes = ByteBuffer.allocate(8);
         IsoTypeWriter.writeUInt8(versionFlagNumOfChildBoxes, version);
         IsoTypeWriter.writeUInt24(versionFlagNumOfChildBoxes, flags);
         IsoTypeWriter.writeUInt32(versionFlagNumOfChildBoxes, getBoxes().size());
-        writableByteChannel.write((ByteBuffer) versionFlagNumOfChildBoxes.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) versionFlagNumOfChildBoxes.rewind());
         writeContainer(writableByteChannel);
     }
 

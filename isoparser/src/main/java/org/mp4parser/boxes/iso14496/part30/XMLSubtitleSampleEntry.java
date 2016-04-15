@@ -1,5 +1,8 @@
 package org.mp4parser.boxes.iso14496.part30;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
 import org.mp4parser.boxes.sampleentry.AbstractSampleEntry;
 import org.mp4parser.tools.IsoTypeReader;
@@ -34,11 +37,9 @@ public class XMLSubtitleSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(8);
-        dataSource.read((ByteBuffer) byteBuffer.rewind());
+        ByteBuffer byteBuffer = readFully(dataSource, 8);
         byteBuffer.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(byteBuffer);
-
 
         byte[] namespaceBytes = new byte[0];
         int read;
@@ -68,14 +69,14 @@ public class XMLSubtitleSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         ByteBuffer byteBuffer = ByteBuffer.allocate(8 + namespace.length() + schemaLocation.length() + auxiliaryMimeTypes.length() + 3);
         byteBuffer.position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, namespace);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, schemaLocation);
         IsoTypeWriter.writeZeroTermUtf8String(byteBuffer, auxiliaryMimeTypes);
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) byteBuffer.rewind());
         writeContainer(writableByteChannel);
     }
 

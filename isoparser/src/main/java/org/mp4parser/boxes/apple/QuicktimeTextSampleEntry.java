@@ -15,6 +15,9 @@
  */
 package org.mp4parser.boxes.apple;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.Box;
 import org.mp4parser.BoxParser;
 import org.mp4parser.boxes.sampleentry.AbstractSampleEntry;
@@ -64,8 +67,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer content = ByteBuffer.allocate(CastUtils.l2i(contentSize));
-        dataSource.read(content);
+        ByteBuffer content = readFully(dataSource, CastUtils.l2i(contentSize));
         content.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = content.getInt();
@@ -105,7 +107,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(52 + (fontName != null ? fontName.length() : 0));
         byteBuffer.position(6);
@@ -129,7 +131,7 @@ public class QuicktimeTextSampleEntry extends AbstractSampleEntry {
             IsoTypeWriter.writeUInt8(byteBuffer, fontName.length());
             byteBuffer.put(fontName.getBytes());
         }
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) byteBuffer.rewind());
         // writeContainer(writableByteChannel); there are no child boxes!?
     }
 

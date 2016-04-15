@@ -16,6 +16,9 @@
 
 package org.mp4parser.boxes.iso14496.part12;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
 import org.mp4parser.support.AbstractContainerBox;
 import org.mp4parser.tools.IsoTypeReader;
@@ -76,18 +79,17 @@ public class MetaBox extends AbstractContainerBox {
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(4);
-        dataSource.read(bb);
-        parseVersionAndFlags((ByteBuffer) bb.rewind());
+        ByteBuffer bb = readFully(dataSource, 4);
+        parseVersionAndFlags(bb);
         initContainer(dataSource, contentSize - 4, boxParser);
     }
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         ByteBuffer bb = ByteBuffer.allocate(4);
         writeVersionAndFlags(bb);
-        writableByteChannel.write((ByteBuffer) bb.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) bb.rewind());
         writeContainer(writableByteChannel);
     }
 
