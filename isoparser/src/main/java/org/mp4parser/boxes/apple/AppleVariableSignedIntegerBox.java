@@ -36,9 +36,9 @@ public abstract class AppleVariableSignedIntegerBox extends AppleDataBox {
 
         if (value <= 127 && value > -128) {
             intLength = 1;
-        } else if (value <= 32767 && value > -32768 && intLength < 2) {
+        } else if (value <= 32767 && value > -32768 && intLength <= 2) {
             intLength = 2;
-        } else if (value <= 8388607 && value > -8388608 && intLength < 3) {
+        } else if (value <= 8388607 && value > -8388608 && intLength <= 3) {
             intLength = 3;
         } else {
             intLength = 4;

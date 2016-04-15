@@ -18,6 +18,8 @@ package org.mp4parser.support;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Aspect
 /**
@@ -27,6 +29,7 @@ import org.aspectj.lang.annotation.Before;
  */
 public class RequiresParseDetailAspect {
 
+    private static Logger LOG = LoggerFactory.getLogger(RequiresParseDetailAspect.class);
 
     @Before("this(org.mp4parser.support.AbstractBox) && ((execution(public * * (..)) && !( " +
             "execution(* parseDetails()) || " +
@@ -51,14 +54,11 @@ public class RequiresParseDetailAspect {
     public void before(JoinPoint joinPoint) {
         if (joinPoint.getTarget() instanceof AbstractBox) {
             if (!((AbstractBox) joinPoint.getTarget()).isParsed()) {
-                //System.err.println(String.format("parsed detail %s", joinPoint.getTarget().getClass().getSimpleName()));
+                LOG.trace("Parsed detail {}", joinPoint.toShortString());
                 ((AbstractBox) joinPoint.getTarget()).parseDetails();
             }
         } else {
             throw new RuntimeException("Only methods in subclasses of " + AbstractBox.class.getName() + " can  be annotated with ParseDetail");
         }
-
     }
-
-
 }

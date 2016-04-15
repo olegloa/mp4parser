@@ -19,12 +19,12 @@ public class HintSampleEntryTest extends BoxRoundtripTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
 
-
         return Collections.singletonList(
-                new Object[]{new HintSampleEntry("rtp "),
-                        new Map.Entry[]{
+                new Object[] {new HintSampleEntry("rtp "),
+                        new Map.Entry[] {
                                 new E("dataReferenceIndex", 0x0102),
-                                new E("data", new byte[]{1, 2, 3, 4})}
-                });
+                                new E("data", new byte[] {1, 2, 3, 4}),
+                                new E("boxes", Collections.EMPTY_LIST)
+                        }});
     }
 }

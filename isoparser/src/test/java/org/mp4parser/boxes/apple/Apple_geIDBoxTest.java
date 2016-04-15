@@ -1,6 +1,9 @@
 package org.mp4parser.boxes.apple;
 
+import static org.junit.Assert.assertEquals;
+
 import com.googlecode.mp4parser.boxes.BoxWriteReadBase;
+
 import org.junit.Test;
 import org.mp4parser.IsoFile;
 import org.mp4parser.tools.ByteBufferByteChannel;
@@ -18,12 +21,15 @@ public class Apple_geIDBoxTest extends BoxWriteReadBase<Apple_geIDBox> {
 
     @Override
     public void setupProperties(Map<String, Object> addPropsHere, Apple_geIDBox box) {
+        addPropsHere.put("intLength", 2);
         addPropsHere.put("value", 1233l);
+        addPropsHere.put("dataCountry", 1);
+        addPropsHere.put("dataLanguage", 1);
     }
 
     @Test
     public void testRealLifeBox() throws IOException {
         Apple_geIDBox geid = (Apple_geIDBox) new IsoFile(new ByteBufferByteChannel(Hex.decodeHex("0000001C67654944000000146461746100000015000000000000000A"))).getBoxes().get(0);
-        System.err.println(geid.getValue());
+        assertEquals(10, geid.getValue());
     }
 }

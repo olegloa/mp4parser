@@ -41,14 +41,12 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
     ThreadLocal<String[]> param = new ThreadLocal<String[]>();
 
     public PropertyBoxParserImpl(String... customProperties) {
-
         if (BOX_MAP_CACHE != null) {
             mapping = new Properties(BOX_MAP_CACHE);
         } else {
-            InputStream is = getClass().getResourceAsStream("/isoparser-default.properties");
             try {
-                mapping = new Properties();
-                try {
+                try (InputStream is = getClass().getResourceAsStream("/isoparser-default.properties")) {
+                    mapping = new Properties();
                     mapping.load(is);
                     ClassLoader cl = Thread.currentThread().getContextClassLoader();
                     if (cl == null) {
@@ -58,27 +56,17 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
 
                     while (enumeration.hasMoreElements()) {
                         URL url = enumeration.nextElement();
-                        InputStream customIS = url.openStream();
-                        try {
+                        try (InputStream customIS = url.openStream()) {
                             mapping.load(customIS);
-                        } finally {
-                            customIS.close();
                         }
                     }
                     for (String customProperty : customProperties) {
                         mapping.load(getClass().getResourceAsStream(customProperty));
                     }
                     BOX_MAP_CACHE = mapping;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
                 }
-            } finally {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    // ignore - I can't help
-                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -87,15 +75,15 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
         this.mapping = mapping;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ParsableBox createBox(String type, byte[] userType, String parent) {
-
         invoke(type, userType, parent);
         String[] param = this.param.get();
         try {
             Class<ParsableBox> clazz = (Class<ParsableBox>) Class.forName(clazzName.get());
             if (param.length > 0) {
-                Class[] constructorArgsClazz = new Class[param.length];
+                Class<?>[] constructorArgsClazz = new Class[param.length];
                 Object[] constructorArgs = new Object[param.length];
                 for (int i = 0; i < param.length; i++) {
                     if ("userType".equals(param[i])) {
@@ -117,16 +105,7 @@ public class PropertyBoxParserImpl extends AbstractBoxParser {
             } else {
                 return clazz.newInstance();
             }
-
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
+        } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
     }

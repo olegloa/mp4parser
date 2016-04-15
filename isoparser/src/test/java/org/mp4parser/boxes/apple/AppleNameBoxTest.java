@@ -16,5 +16,7 @@ public class AppleNameBoxTest extends BoxWriteReadBase<AppleNameBox> {
     @Override
     public void setupProperties(Map<String, Object> addPropsHere, AppleNameBox box) {
         addPropsHere.put("value", "The Arrangement");
+        addPropsHere.put("dataCountry", 1);
+        addPropsHere.put("dataLanguage", 1);
     }
 }

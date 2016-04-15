@@ -27,19 +27,24 @@ public class CencSampleEncryptionInformationGroupEntryTest extends BoxRoundtripT
         seig2.setKid(UUID.fromString("00000000-0000-0000-0000-000000000000"));
 
         return Arrays.asList(
-                new Object[]{new SampleGroupDescriptionBox(),
-                        new Map.Entry[]{
+                new Object[] {new SampleGroupDescriptionBox(),
+                        new Map.Entry[] {
                                 new E("groupingType", CencSampleEncryptionInformationGroupEntry.TYPE),
-                                new E("groupEntries", Arrays.asList(seig1))}},
-                new Object[]{new SampleGroupDescriptionBox(),
-                        new Map.Entry[]{
-                                new E("groupingType", CencSampleEncryptionInformationGroupEntry.TYPE),
-                                new E("groupEntries", Arrays.asList(seig1, seig2))
+                                new E("groupEntries", Arrays.asList(seig1)),
+                                new E("defaultLength", 0)
                         }},
-                new Object[]{new SampleGroupDescriptionBox(),
-                        new Map.Entry[]{
+                new Object[] {new SampleGroupDescriptionBox(),
+                        new Map.Entry[] {
                                 new E("groupingType", CencSampleEncryptionInformationGroupEntry.TYPE),
-                                new E("groupEntries", Arrays.asList(seig2))}});
+                                new E("groupEntries", Arrays.asList(seig1, seig2)),
+                                new E("defaultLength", 0)
+                        }},
+                new Object[] {new SampleGroupDescriptionBox(),
+                        new Map.Entry[] {
+                                new E("groupingType", CencSampleEncryptionInformationGroupEntry.TYPE),
+                                new E("groupEntries", Arrays.asList(seig2)),
+                                new E("defaultLength", 0)
+                        }});
     }
 
 

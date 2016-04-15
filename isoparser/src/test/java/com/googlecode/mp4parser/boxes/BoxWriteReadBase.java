@@ -18,6 +18,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class BoxWriteReadBase<T extends ParsableBox> {
@@ -59,7 +60,7 @@ public abstract class BoxWriteReadBase<T extends ParsableBox> {
         T box = getInstance(clazz);
         BeanInfo beanInfo = Introspector.getBeanInfo(box.getClass());
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-        Map<String, Object> props = new HashMap<String, Object>();
+        Map<String, Object> props = new LinkedHashMap<String, Object>();
         setupProperties(props, box);
         for (String property : props.keySet()) {
             boolean found = false;
@@ -67,13 +68,12 @@ public abstract class BoxWriteReadBase<T extends ParsableBox> {
                 if (property.equals(propertyDescriptor.getName())) {
                     found = true;
                     try {
-                        propertyDescriptor.getWriteMethod().invoke(box, props.get(property));
+                        if (propertyDescriptor.getWriteMethod() != null) {
+                            propertyDescriptor.getWriteMethod().invoke(box, props.get(property));
+                        }
                     } catch (IllegalArgumentException e) {
-
                         System.err.println(propertyDescriptor.getWriteMethod().getName() + "(" + propertyDescriptor.getWriteMethod().getParameterTypes()[0].getSimpleName() + ");");
                         System.err.println("Called with " + props.get(property).getClass());
-
-
                         throw e;
                     }
                     // do the next assertion on string level to not trap into the long vs java.lang.Long pitfall
@@ -84,7 +84,6 @@ public abstract class BoxWriteReadBase<T extends ParsableBox> {
                 Assert.fail("Could not find any property descriptor for " + property);
             }
         }
-
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WritableByteChannel wbc = Channels.newChannel(baos);
@@ -126,7 +125,7 @@ public abstract class BoxWriteReadBase<T extends ParsableBox> {
 
         boolean output = false;
         for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-            if (!props.containsKey(propertyDescriptor.getName())) {
+            if (!props.containsKey(propertyDescriptor.getName()) && propertyDescriptor.getWriteMethod() != null) {
                 if (!skipList.contains(propertyDescriptor.getName())) {
                     if (!output) {
                         System.out.println("No value given for the following properties: ");

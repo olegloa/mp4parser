@@ -79,13 +79,12 @@ public abstract class BoxRoundtripTest {
                 if (property.equals(propertyDescriptor.getName())) {
                     found = true;
                     try {
-                        propertyDescriptor.getWriteMethod().invoke(parsableBoxUnderTest, props.get(property));
+                        if (propertyDescriptor.getWriteMethod() != null) {
+                            propertyDescriptor.getWriteMethod().invoke(parsableBoxUnderTest, props.get(property));
+                        }
                     } catch (IllegalArgumentException e) {
-
                         System.err.println(propertyDescriptor.getWriteMethod().getName() + "(" + propertyDescriptor.getWriteMethod().getParameterTypes()[0].getSimpleName() + ");");
                         System.err.println("Called with " + props.get(property).getClass());
-
-
                         throw e;
                     }
                     // do the next assertion on string level to not trap into the long vs java.lang.Long pitfall
@@ -96,7 +95,6 @@ public abstract class BoxRoundtripTest {
                 Assert.fail("Could not find any property descriptor for " + property);
             }
         }
-
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WritableByteChannel wbc = Channels.newChannel(baos);
