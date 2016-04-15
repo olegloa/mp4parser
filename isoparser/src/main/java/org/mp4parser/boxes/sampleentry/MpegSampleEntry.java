@@ -1,5 +1,8 @@
 package org.mp4parser.boxes.sampleentry;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
@@ -21,8 +24,7 @@ public class MpegSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer bb = ByteBuffer.allocate(8);
-        dataSource.read(bb);
+        ByteBuffer bb = readFully(dataSource, 8);
         bb.position(6);// ignore 6 reserved bytes;
         dataReferenceIndex = IsoTypeReader.readUInt16(bb);
         initContainer(dataSource, contentSize - 8, boxParser);
@@ -30,11 +32,11 @@ public class MpegSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         ByteBuffer bb = ByteBuffer.allocate(8);
         bb.position(6);
         IsoTypeWriter.writeUInt16(bb, dataReferenceIndex);
-        writableByteChannel.write((ByteBuffer) bb.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) bb.rewind());
         writeContainer(writableByteChannel);
     }
 

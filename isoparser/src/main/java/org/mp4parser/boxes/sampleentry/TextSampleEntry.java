@@ -16,7 +16,11 @@
 
 package org.mp4parser.boxes.sampleentry;
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
+import org.mp4parser.tools.CastUtils;
 import org.mp4parser.tools.IsoTypeReader;
 import org.mp4parser.tools.IsoTypeWriter;
 
@@ -68,8 +72,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        ByteBuffer content = ByteBuffer.allocate(38);
-        dataSource.read(content);
+        ByteBuffer content = readFully(dataSource, 38);
         content.position(6);
         dataReferenceIndex = IsoTypeReader.readUInt16(content);
         displayFlags = IsoTypeReader.readUInt32(content);
@@ -90,7 +93,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         ByteBuffer byteBuffer = ByteBuffer.allocate(38);
         byteBuffer.position(6);
         IsoTypeWriter.writeUInt16(byteBuffer, dataReferenceIndex);
@@ -103,7 +106,7 @@ public class TextSampleEntry extends AbstractSampleEntry {
         IsoTypeWriter.writeUInt8(byteBuffer, backgroundColorRgba[3]);
         boxRecord.getContent(byteBuffer);
         styleRecord.getContent(byteBuffer);
-        writableByteChannel.write((ByteBuffer) byteBuffer.rewind());
+        writeFully(writableByteChannel, (ByteBuffer) byteBuffer.rewind());
         writeContainer(writableByteChannel);
     }
 

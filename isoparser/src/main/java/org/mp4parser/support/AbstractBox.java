@@ -32,6 +32,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import static org.mp4parser.tools.CastUtils.l2i;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
 
 /**
  * A basic on-demand parsing box. Requires the implementation of three methods to become a fully working box:
@@ -117,12 +118,12 @@ public abstract class AbstractBox implements ParsableBox {
                     bb.put(deadBytes);
                 }
             }
-            os.write((ByteBuffer) bb.rewind());
+            writeFully(os, (ByteBuffer) bb.rewind());
         } else {
             ByteBuffer header = ByteBuffer.allocate((isSmallBox() ? 8 : 16) + (UserBox.TYPE.equals(getType()) ? 16 : 0));
             getHeader(header);
-            os.write((ByteBuffer) header.rewind());
-            os.write((ByteBuffer) content.position(0));
+            writeFully(os, (ByteBuffer) header.rewind());
+            writeFully(os, (ByteBuffer) content.position(0));
         }
     }
 

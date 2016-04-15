@@ -17,6 +17,9 @@
 package org.mp4parser.boxes.iso14496.part12;
 
 
+import static org.mp4parser.tools.ChannelHelper.readFully;
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
 import org.mp4parser.Container;
 import org.mp4parser.ParsableBox;
@@ -69,10 +72,10 @@ public class FreeBox implements ParsableBox {
         IsoTypeWriter.writeUInt32(header, 8 + data.limit());
         header.put(TYPE.getBytes());
         header.rewind();
-        os.write(header);
+        writeFully(os, header);
         header.rewind();
         data.rewind();
-        os.write(data);
+        writeFully(os, data);
         data.rewind();
 
     }
@@ -91,13 +94,7 @@ public class FreeBox implements ParsableBox {
     }
 
     public void parse(ReadableByteChannel dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
-        data = ByteBuffer.allocate(CastUtils.l2i(contentSize));
-
-        int bytesRead = 0;
-        int b;
-        while (((((b = dataSource.read(data))) + bytesRead) < contentSize)) {
-            bytesRead += b;
-        }
+        data = readFully(dataSource, CastUtils.l2i(contentSize)); 
     }
 
 

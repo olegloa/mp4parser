@@ -1,5 +1,7 @@
 package org.mp4parser.boxes.iso14496.part30;
 
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BoxParser;
 import org.mp4parser.boxes.sampleentry.AbstractSampleEntry;
 import org.mp4parser.tools.Path;
@@ -33,7 +35,7 @@ public class WebVTTSampleEntry extends AbstractSampleEntry {
 
     @Override
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         writeContainer(writableByteChannel);
     }
 

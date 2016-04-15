@@ -16,6 +16,8 @@
 
 package org.mp4parser.support;
 
+import static org.mp4parser.tools.ChannelHelper.writeFully;
+
 import org.mp4parser.BasicContainer;
 import org.mp4parser.BoxParser;
 import org.mp4parser.Container;
@@ -77,7 +79,7 @@ public class AbstractContainerBox extends BasicContainer implements ParsableBox 
 
 
     public void getBox(WritableByteChannel writableByteChannel) throws IOException {
-        writableByteChannel.write(getHeader());
+        writeFully(writableByteChannel, getHeader());
         writeContainer(writableByteChannel);
     }
 
